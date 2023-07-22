@@ -86,8 +86,66 @@ app.route("/articles/:articleTitle")
     });
 
 })
+.put( async (req, res) => {
+  const { articleTitle } = req.params;
+  const { title, content } = req.body;
+
+  try {
+    const updatedArticle = await Article.findOneAndUpdate(
+      { title: articleTitle },
+      { title, content },
+      { overwrite: true, new: true }
+    );
+
+    if (!updatedArticle) {
+      return res.status(404).json({ error: "Artículo no encontrado error 404" });
+    }
+
+    res.send("Se actualizó correctamente");
+  } catch (error) {
+    console.log(error);
+    res.send("Error al actualizar el artículo");
+  }
+})
+.patch((req, res) => {
+  const { articleTitle } = req.params;
+  const { title, content } = req.body;
+
+  Article.findOneAndUpdate(
+    { title: articleTitle },
+    { $set:  req.body },
+    { new: true }
+  )
+    .then(updatedArticle => {
+      if (!updatedArticle) {
+        return res.status(404).json({ error: "Artículo no encontrado error 404" });
+      }
+
+      res.send("Se actualizó correctamente");
+    })
+    .catch(error => {
+      console.log(error);
+      res.send("Error al actualizar el artículo");
+    });
+})
 
 
+.delete((req, res) => {
+  const { articleTitle } = req.params;
+
+  Article.findOneAndDelete({ title: articleTitle })
+    .then(deletedArticle => {
+      if (!deletedArticle) {
+        return res.status(404).json({ error: "Artículo no encontrado error 404" });
+      }
+
+      res.send("Artículo eliminado correctamente");
+    })
+    .catch(error => {
+      console.log(error);
+      res.send("Error al eliminar el artículo");
+    });
+});
 app.listen(3000, function() {
   console.log("Server started on port 3000");
 });
