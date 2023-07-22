@@ -25,7 +25,12 @@ const articleSchema = {
 
 const Article = mongoose.model("Article", articleSchema);
 
-app.get("/articles", (req, res) => {
+
+/////////Request ALL articles////////////////////////////////
+
+app.route("/articles")
+
+.get( (req, res) => {
   Article.find()
     .then(foundArticles => {
       res.json(foundArticles);
@@ -33,9 +38,8 @@ app.get("/articles", (req, res) => {
     .catch(error => {
       console.error(error);
     });
-});
-
-app.post("/article", async (req, res) => {
+})
+.post(async (req, res) => {
   try {
     const newTopic = new Article({
       title: req.body.title,
@@ -50,7 +54,39 @@ app.post("/article", async (req, res) => {
     console.error(error);
     res.send("Error al guardar el artículo.");
   }
-});
+})
+.delete( async (req, res) => {
+  try {
+    await Article.deleteMany();
+
+    res.send("Artículos eliminados exitosamente.");
+  } catch (error) {
+    console.error(error);
+    res.send("Error al eliminar los artículos.");
+  }
+})
+
+
+
+///////REQUEST SPECIFIC ARTICLE//////////////
+app.route("/articles/:articleTitle")
+.get((req,res)=>{
+  Article.find({title:req.params.articleTitle})
+    .then(foundArticles => {
+      if (foundArticles.length === 0) {
+        // No se encontró el artículo
+        return res.status(404).json({ error: "Artículo no encontrado error 404" });
+      }
+     res.json(foundArticles)
+     console.log(foundArticles)
+    })
+    .catch(error => {
+      console.log(error)
+      res.send({ error: "Error al buscar el artículo" });
+    });
+
+})
+
 
 app.listen(3000, function() {
   console.log("Server started on port 3000");
